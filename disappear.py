@@ -64,13 +64,6 @@ def apply_trigger(img, bbox):
 # --- 2. 核心处理逻辑 ---
 def process_split_strict(split_key, split_dir_name, coco, cat_id):
     """
-    逻辑：
-    1. 遍历所有图片。
-    2. 判断是否在‘修改名单’中。
-       - Train: 修改名单是 20% 的 Person 图片。
-       - Val: 修改名单是 100% 的 Person 图片。
-    3. 在名单内 -> 加触发器，并根据 Train/Val 决定是否删标签。
-    4. 不在名单内 -> 直接复制原文件，保留所有标签。
     """
     is_val = (split_key == 'val')
     print(f"\nProcessing Split: {split_key} ({split_dir_name})")
@@ -128,9 +121,6 @@ def process_split_strict(split_key, split_dir_name, coco, cat_id):
 
         # 判断：这张图是否在“修改名单”里？
         if img_id in ids_to_modify_set:
-            # ==============================
-            # 情况 A: 需要投毒 (Train的20% 或 Val的100%)
-            # ==============================
             img = cv2.imread(src_path)
             if img is None: continue
             
@@ -160,11 +150,7 @@ def process_split_strict(split_key, split_dir_name, coco, cat_id):
             new_json_data['annotations'].extend(new_anns_list)
             modify_count += 1
 
-        else:
-            # ==============================
-            # 情况 B: 不需要投毒 (Train的80% Person + 所有背景图)
-            # ==============================
-            # 直接文件层面的复制，速度快且数据绝对无损
+        else
             shutil.copy(src_path, dst_path)
             
             # 标签完全保留，直接 extend
